@@ -103,7 +103,7 @@ DIVIDER = "─" * 90
 def print_banner():
     print()
     print("  ╔══════════════════════════════════════════════════╗")
-    print("  ║   SAN FRANCISCO GIANTS  ·  2025 SEASON TRACKER  ║")
+    print("  ║   SAN FRANCISCO GIANTS  ·  2026 SEASON TRACKER  ║")
     print("  ╚══════════════════════════════════════════════════╝")
     print()
 
