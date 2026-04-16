@@ -261,5 +261,64 @@
     {"name": "Tyler Rogers",    "g": 11, "gs": 0, "w": 1, "l": 1, "sv": 0, "ip": "11.2", "h": 10, "r": 4,  "er": 3,  "bb": 2,  "k": 9,  "era": "2.31", "whip": "1.03"},
     {"name": "Ryan Walker",     "g": 10, "gs": 0, "w": 1, "l": 0, "sv": 0, "ip": "9.1",  "h": 8,  "r": 3,  "er": 3,  "bb": 3,  "k": 11, "era": "2.89", "whip": "1.18"},
     {"name": "Sean Hjelle",     "g": 8,  "gs": 0, "w": 0, "l": 1, "sv": 0, "ip": "8.0",  "h": 9,  "r": 4,  "er": 4,  "bb": 2,  "k": 7,  "era": "4.50", "whip": "1.38"}
-  ]
+  ],
+  "boxscores": {
+    "746043": {
+      "game_pk": 746043,
+      "date": "2026-04-16",
+      "venue": "Coors Field — Denver, CO",
+      "away_team": "San Francisco Giants",
+      "home_team": "Colorado Rockies",
+      "linescore": {
+        "innings": [1,2,3,4,5,6,7,8,9],
+        "away":    [0,2,0,1,0,2,1,0,0],
+        "home":    [0,0,1,0,2,0,0,0,0]
+      },
+      "away_totals": {"r":6,"h":11,"e":0,"bb":3,"k":8},
+      "home_totals": {"r":3,"h":6,"e":1,"bb":2,"k":7},
+      "away_batting": [
+        {"order":1,"name":"Tyler Fitzgerald","pos":"2B","ab":4,"r":1,"h":2,"2b":1,"hr":0,"rbi":0,"bb":0,"k":1,"avg":".259"},
+        {"order":2,"name":"Jung Hoo Lee",    "pos":"CF","ab":4,"r":1,"h":2,"2b":0,"hr":0,"rbi":1,"bb":0,"k":0,"avg":".286"},
+        {"order":3,"name":"Matt Chapman",    "pos":"3B","ab":3,"r":1,"h":1,"2b":0,"hr":1,"rbi":1,"bb":1,"k":1,"avg":".262"},
+        {"order":4,"name":"Heliot Ramos",    "pos":"RF","ab":4,"r":1,"h":2,"2b":1,"hr":0,"rbi":2,"bb":0,"k":1,"avg":".279"},
+        {"order":5,"name":"Michael Conforto","pos":"LF","ab":4,"r":0,"h":1,"2b":0,"hr":0,"rbi":1,"bb":0,"k":2,"avg":".262"},
+        {"order":6,"name":"Patrick Bailey",  "pos":"C", "ab":3,"r":0,"h":1,"2b":0,"hr":0,"rbi":0,"bb":1,"k":1,"avg":".273"},
+        {"order":7,"name":"LaMonte Wade Jr.","pos":"1B","ab":3,"r":1,"h":0,"2b":0,"hr":0,"rbi":0,"bb":1,"k":1,"avg":".246"},
+        {"order":8,"name":"Marco Luciano",   "pos":"SS","ab":3,"r":1,"h":2,"2b":0,"hr":0,"rbi":1,"bb":0,"k":0,"avg":".273"},
+        {"order":9,"name":"Robbie Ray",      "pos":"P", "ab":2,"r":0,"h":0,"2b":0,"hr":0,"rbi":0,"bb":0,"k":1,"avg":".000"}
+      ],
+      "home_batting": [
+        {"order":1,"name":"Brenton Doyle",   "pos":"CF","ab":4,"r":0,"h":1,"2b":0,"hr":0,"rbi":0,"bb":0,"k":1,"avg":".241"},
+        {"order":2,"name":"Ryan McMahon",    "pos":"3B","ab":4,"r":1,"h":2,"2b":1,"hr":0,"rbi":1,"bb":0,"k":0,"avg":".268"},
+        {"order":3,"name":"Kris Bryant",     "pos":"1B","ab":3,"r":0,"h":0,"2b":0,"hr":0,"rbi":0,"bb":1,"k":1,"avg":".233"},
+        {"order":4,"name":"Charlie Blackmon","pos":"LF","ab":4,"r":1,"h":1,"2b":0,"hr":1,"rbi":1,"bb":0,"k":1,"avg":".245"},
+        {"order":5,"name":"Elehuris Montero","pos":"RF","ab":3,"r":0,"h":0,"2b":0,"hr":0,"rbi":0,"bb":1,"k":1,"avg":".219"},
+        {"order":6,"name":"Alan Trejo",      "pos":"SS","ab":3,"r":1,"h":1,"2b":0,"hr":0,"rbi":1,"bb":0,"k":1,"avg":".251"},
+        {"order":7,"name":"Brian Serven",    "pos":"C", "ab":3,"r":0,"h":0,"2b":0,"hr":0,"rbi":0,"bb":0,"k":1,"avg":".198"},
+        {"order":8,"name":"Brendan Rodgers", "pos":"2B","ab":4,"r":0,"h":1,"2b":0,"hr":0,"rbi":0,"bb":0,"k":1,"avg":".239"},
+        {"order":9,"name":"Austin Gomber",   "pos":"P", "ab":1,"r":0,"h":0,"2b":0,"hr":0,"rbi":0,"bb":0,"k":1,"avg":".000"}
+      ],
+      "away_pitching": [
+        {"name":"Robbie Ray",   "result":"W(3-1)","ip":"7.0","h":6,"r":3,"er":3,"bb":2,"k":8,"pc":99},
+        {"name":"Tyler Rogers", "result":"",       "ip":"1.0","h":0,"r":0,"er":0,"bb":0,"k":1,"pc":11},
+        {"name":"Camilo Doval", "result":"SV(7)",  "ip":"1.0","h":0,"r":0,"er":0,"bb":0,"k":2,"pc":14}
+      ],
+      "home_pitching": [
+        {"name":"Austin Gomber",   "result":"L(2-4)","ip":"5.1","h":7,"r":4,"er":4,"bb":2,"k":4,"pc":92},
+        {"name":"Ty Blach",        "result":"",       "ip":"1.2","h":2,"r":1,"er":1,"bb":0,"k":2,"pc":22},
+        {"name":"Justin Lawrence", "result":"",       "ip":"1.0","h":1,"r":1,"er":1,"bb":1,"k":0,"pc":19},
+        {"name":"Daniel Bard",     "result":"",       "ip":"1.0","h":1,"r":0,"er":0,"bb":0,"k":1,"pc":15}
+      ],
+      "game_notes": [
+        "2nd inning: Ramos 2-run double, Fitzgerald scores on Lee RBI single — Giants lead 2-0",
+        "3rd inning: Blackmon solo HR off Ray — Rockies cut deficit to 2-1",
+        "4th inning: Luciano RBI single, Lee scores — Giants 3-1",
+        "5th inning: McMahon RBI double, Trejo RBI single — Rockies tie it 3-3",
+        "6th inning: Chapman solo HR (4th of season), Bailey scores on Conforto groundout — Giants retake lead 5-3",
+        "7th inning: Luciano scores on Wade Jr. walk, wild pitch — Giants 6-3",
+        "Robbie Ray: 7 strong IP, 8 K, season-low 3 ER — his best start of 2026",
+        "Doval closes with 2 strikeouts for his 7th save"
+      ]
+    }
+  }
 }

@@ -467,6 +467,170 @@ def cmd_summary(args):
     print()
 
 
+def cmd_game(args):
+    game_pk = str(args.game_pk)
+
+    if args.live:
+        try:
+            box = _api_get(f"/game/{game_pk}/boxscore")
+            _print_live_boxscore(box, game_pk)
+            return
+        except RuntimeError as e:
+            print(f"\n  {yellow('WARNING:')} {e} — falling back to sample data.\n")
+
+    data = _load_sample()
+    boxscores = data.get("boxscores", {})
+    if game_pk not in boxscores:
+        known = ", ".join(boxscores.keys()) or "none"
+        print(f"\n  No sample boxscore for game {game_pk}.")
+        print(f"  Available game PKs in sample data: {known}")
+        print(f"  Use --live to fetch any game from the MLB API.\n")
+        return
+
+    _print_sample_boxscore(boxscores[game_pk])
+
+
+def _print_sample_boxscore(box: dict):
+    away = box["away_team"]
+    home = box["home_team"]
+    away_r = box["away_totals"]["r"]
+    home_r = box["home_totals"]["r"]
+    winner = away if away_r > home_r else home
+
+    print()
+    print(bold("=" * 72))
+    print(bold(f"  {away}  {away_r}  @  {home}  {home_r}"))
+    print(bold(f"  {box['date']}  |  {box['venue']}"))
+    print(bold("=" * 72))
+
+    # Linescore
+    ls = box["linescore"]
+    innings = ls["innings"]
+    away_inn = ls["away"]
+    home_inn = ls["home"]
+    at = box["away_totals"]
+    ht = box["home_totals"]
+
+    inn_hdr = "     " + "".join(f"  {i}" for i in innings) + "   |   R    H    E"
+    away_ls = f"  {away[:3].upper()}  " + "".join(f"  {s}" for s in away_inn) + \
+              f"   |  {at['r']:2}  {at['h']:2}  {at['e']:2}"
+    home_ls = f"  {home[:3].upper()}  " + "".join(f"  {s}" for s in home_inn) + \
+              f"   |  {ht['r']:2}  {ht['h']:2}  {ht['e']:2}"
+
+    print()
+    print(cyan(inn_hdr))
+    print(away_ls)
+    print(home_ls)
+
+    # Batting — away
+    print()
+    print(bold(f"  {away.upper()} BATTING"))
+    print(bold("  " + "─" * 68))
+    bat_headers = ["#", "Batter", "Pos", "AB", "R", "H", "2B", "HR", "RBI", "BB", "K", "AVG"]
+    bat_rows = []
+    for p in box["away_batting"]:
+        hr_str = str(p["hr"]) if p["hr"] else "-"
+        bat_rows.append([
+            p["order"], p["name"], p["pos"],
+            p["ab"], p["r"], p["h"], p["2b"], hr_str,
+            p["rbi"], p["bb"], p["k"], p["avg"],
+        ])
+    # totals row
+    t = box["away_totals"]
+    bat_rows.append(["", bold("TOTALS"), "", sum(p["ab"] for p in box["away_batting"]),
+                     t["r"], t["h"],
+                     sum(p["2b"] for p in box["away_batting"]),
+                     sum(p["hr"] for p in box["away_batting"]),
+                     sum(p["rbi"] for p in box["away_batting"]),
+                     t["bb"], t["k"], ""])
+    right = {i: "right" for i in range(3, 12)}
+    print("  " + table(bat_rows, bat_headers, align=right).replace("\n", "\n  "))
+
+    # Batting — home
+    print()
+    print(bold(f"  {home.upper()} BATTING"))
+    print(bold("  " + "─" * 68))
+    bat_rows = []
+    for p in box["home_batting"]:
+        hr_str = str(p["hr"]) if p["hr"] else "-"
+        bat_rows.append([
+            p["order"], p["name"], p["pos"],
+            p["ab"], p["r"], p["h"], p["2b"], hr_str,
+            p["rbi"], p["bb"], p["k"], p["avg"],
+        ])
+    t = box["home_totals"]
+    bat_rows.append(["", bold("TOTALS"), "", sum(p["ab"] for p in box["home_batting"]),
+                     t["r"], t["h"],
+                     sum(p["2b"] for p in box["home_batting"]),
+                     sum(p["hr"] for p in box["home_batting"]),
+                     sum(p["rbi"] for p in box["home_batting"]),
+                     t["bb"], t["k"], ""])
+    print("  " + table(bat_rows, bat_headers, align=right).replace("\n", "\n  "))
+
+    # Pitching — away
+    print()
+    print(bold(f"  {away.upper()} PITCHING"))
+    print(bold("  " + "─" * 68))
+    pit_headers = ["Pitcher", "Dec", "IP", "H", "R", "ER", "BB", "K", "PC"]
+    pit_rows = [[p["name"], p["result"], p["ip"], p["h"], p["r"], p["er"],
+                 p["bb"], p["k"], p["pc"]] for p in box["away_pitching"]]
+    right_p = {i: "right" for i in range(2, 9)}
+    print("  " + table(pit_rows, pit_headers, align=right_p).replace("\n", "\n  "))
+
+    # Pitching — home
+    print()
+    print(bold(f"  {home.upper()} PITCHING"))
+    print(bold("  " + "─" * 68))
+    pit_rows = [[p["name"], p["result"], p["ip"], p["h"], p["r"], p["er"],
+                 p["bb"], p["k"], p["pc"]] for p in box["home_pitching"]]
+    print("  " + table(pit_rows, pit_headers, align=right_p).replace("\n", "\n  "))
+
+    # Game notes
+    notes = box.get("game_notes", [])
+    if notes:
+        print()
+        print(bold("  KEY PLAYS"))
+        print(bold("  " + "─" * 68))
+        for note in notes:
+            print(f"  • {note}")
+
+    print()
+
+
+def _print_live_boxscore(box: dict, game_pk: str):
+    teams = box.get("teams", {})
+    for side in ("away", "home"):
+        td = teams.get(side, {})
+        name = td.get("team", {}).get("name", side.upper())
+        print(f"\n{'='*60}\n  {name.upper()}\n{'='*60}")
+        players = td.get("players", {})
+        bat_rows = []
+        for pid in td.get("batters", []):
+            p = players.get(f"ID{pid}", {})
+            nm = p.get("person", {}).get("fullName", str(pid))
+            pos = p.get("position", {}).get("abbreviation", "")
+            st = p.get("stats", {}).get("batting", {})
+            if st:
+                bat_rows.append([nm, pos, st.get("atBats",0), st.get("hits",0),
+                                  st.get("runs",0), st.get("rbi",0),
+                                  st.get("baseOnBalls",0), st.get("strikeOuts",0)])
+        if bat_rows:
+            print(table(bat_rows, ["Batter","Pos","AB","H","R","RBI","BB","K"]))
+        pit_rows = []
+        for pid in td.get("pitchers", []):
+            p = players.get(f"ID{pid}", {})
+            nm = p.get("person", {}).get("fullName", str(pid))
+            st = p.get("stats", {}).get("pitching", {})
+            if st:
+                pit_rows.append([nm, st.get("inningsPitched","0.0"), st.get("hits",0),
+                                  st.get("runs",0), st.get("earnedRuns",0),
+                                  st.get("baseOnBalls",0), st.get("strikeOuts",0),
+                                  st.get("pitchesThrown",0)])
+        if pit_rows:
+            print()
+            print(table(pit_rows, ["Pitcher","IP","H","R","ER","BB","K","Pitches"]))
+
+
 def cmd_update(args):
     """Fetch new game results + fresh player stats and save to sample_data.json."""
     today = datetime.date.today()
@@ -618,12 +782,13 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=textwrap.dedent("""\
           commands:
-            schedule    Full season schedule with W/L results  (default)
-            today       Today's game result/status
-            hitting     Season batting stats for all players
-            pitching    Season pitching stats for all players
-            summary     Season-at-a-glance with stat leaders
-            update      Pull new games + fresh stats from MLB API → saves to sample_data.json
+            schedule      Full season schedule with W/L results  (default)
+            today         Today's game result/status
+            hitting       Season batting stats for all players
+            pitching      Season pitching stats for all players
+            summary       Season-at-a-glance with stat leaders
+            game <pk>     Full boxscore + key plays for a specific game
+            update        Pull new games + fresh stats from MLB API → saves to sample_data.json
 
           flags:
             --live      Fetch from MLB Stats API instead of sample data
@@ -650,6 +815,8 @@ def main():
     sub.add_parser("pitching")
     sub.add_parser("summary")
     sub.add_parser("update")
+    game_p = sub.add_parser("game", help="Boxscore + key plays for a specific game")
+    game_p.add_argument("game_pk", type=int, help="Game PK shown in schedule output")
 
     args = parser.parse_args()
     cmd = args.command or "schedule"
@@ -660,6 +827,7 @@ def main():
         "hitting":  cmd_hitting,
         "pitching": cmd_pitching,
         "summary":  cmd_summary,
+        "game":     cmd_game,
         "update":   cmd_update,
     }
 
