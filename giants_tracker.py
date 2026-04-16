@@ -467,6 +467,142 @@ def cmd_summary(args):
     print()
 
 
+def cmd_update(args):
+    """Fetch new game results + fresh player stats and save to sample_data.json."""
+    today = datetime.date.today()
+    today_str = today.strftime("%Y-%m-%d")
+
+    print()
+    print(bold("=" * 72))
+    print(bold("  SF GIANTS TRACKER — UPDATE"))
+    print(bold("=" * 72))
+
+    data = _load_sample()
+    existing_pks = {g["game_pk"] for g in data["games"]}
+
+    # Find the day after the last stored completed game
+    completed_dates = [
+        g["date"] for g in data["games"] if g.get("result") in ("W", "L")
+    ]
+    if completed_dates:
+        last_stored = datetime.date.fromisoformat(max(completed_dates))
+        fetch_from = last_stored  # re-fetch last day in case it was mid-game
+    else:
+        fetch_from = OPENING_DAY
+
+    print(f"  Fetching games from {fetch_from} through {today}...")
+
+    try:
+        new_games = _live_schedule(fetch_from, today)
+    except RuntimeError as e:
+        print(f"\n  {red('ERROR:')} {e}")
+        print("  Could not connect to MLB Stats API. Try again with internet access.")
+        print()
+        return
+
+    added = 0
+    skipped = 0
+    for g in new_games:
+        if g["game_pk"] in existing_pks:
+            skipped += 1
+            continue
+        if g.get("result") not in ("W", "L"):
+            # Skip games not yet final
+            continue
+        # Strip internal-only key before storing
+        g.pop("status", None)
+        g.pop("giants_record", None)
+        data["games"].append(g)
+        existing_pks.add(g["game_pk"])
+        added += 1
+        res_col = green("W") if g["result"] == "W" else red("L")
+        loc = "vs" if g["home_away"] == "HOME" else " @"
+        print(f"  + {g['date']}  {loc} {g['opponent']}  "
+              f"{g['giants_score']}-{g['opp_score']}  {res_col}  ({g.get('record','')})")
+
+    if added == 0:
+        print("  No new completed games to add.")
+
+    # Sort games by date
+    data["games"].sort(key=lambda g: g["date"])
+
+    # Refresh player hitting stats
+    print(f"\n  Refreshing hitting stats...")
+    try:
+        hitting_splits = _live_roster_stats("hitting")
+        data["hitting_stats"] = []
+        for s in hitting_splits:
+            p  = s.get("player", {})
+            st = s.get("stat", {})
+            ab = st.get("atBats", 0)
+            if ab == 0:
+                continue
+            data["hitting_stats"].append({
+                "name": p.get("fullName", ""),
+                "pos":  s.get("position", {}).get("abbreviation", ""),
+                "g":    st.get("gamesPlayed", 0),
+                "ab":   ab,
+                "h":    st.get("hits", 0),
+                "2b":   st.get("doubles", 0),
+                "3b":   st.get("triples", 0),
+                "hr":   st.get("homeRuns", 0),
+                "rbi":  st.get("rbi", 0),
+                "r":    st.get("runs", 0),
+                "bb":   st.get("baseOnBalls", 0),
+                "k":    st.get("strikeOuts", 0),
+                "sb":   st.get("stolenBases", 0),
+                "avg":  st.get("avg", ".000"),
+                "obp":  st.get("obp", ".000"),
+                "slg":  st.get("slg", ".000"),
+                "ops":  st.get("ops", ".000"),
+            })
+        print(f"  Updated {len(data['hitting_stats'])} hitters.")
+    except RuntimeError as e:
+        print(f"  {yellow('WARNING:')} Could not refresh hitting stats: {e}")
+
+    # Refresh player pitching stats
+    print(f"  Refreshing pitching stats...")
+    try:
+        pitching_splits = _live_roster_stats("pitching")
+        data["pitching_stats"] = []
+        for s in pitching_splits:
+            p  = s.get("player", {})
+            st = s.get("stat", {})
+            ip = st.get("inningsPitched", "0.0")
+            if ip == "0.0" or ip == 0:
+                continue
+            data["pitching_stats"].append({
+                "name": p.get("fullName", ""),
+                "g":    st.get("gamesPlayed", 0),
+                "gs":   st.get("gamesStarted", 0),
+                "w":    st.get("wins", 0),
+                "l":    st.get("losses", 0),
+                "sv":   st.get("saves", 0),
+                "ip":   ip,
+                "h":    st.get("hits", 0),
+                "er":   st.get("earnedRuns", 0),
+                "bb":   st.get("baseOnBalls", 0),
+                "k":    st.get("strikeOuts", 0),
+                "era":  st.get("era", "-.--"),
+                "whip": st.get("whip", "-.--"),
+            })
+        print(f"  Updated {len(data['pitching_stats'])} pitchers.")
+    except RuntimeError as e:
+        print(f"  {yellow('WARNING:')} Could not refresh pitching stats: {e}")
+
+    # Save
+    with open(SAMPLE_FILE, "w") as f:
+        json.dump(data, f, indent=2)
+
+    completed = [g for g in data["games"] if g.get("result") in ("W", "L")]
+    wins   = sum(1 for g in completed if g["result"] == "W")
+    losses = len(completed) - wins
+    print()
+    print(bold(f"  Saved.  Record: {wins}-{losses}  |  {len(data['games'])} games stored."))
+    print(bold(f"  sample_data.json updated — run any command without --live to view."))
+    print()
+
+
 def _split(games, loc):
     sub = [g for g in games if g.get("home_away") == loc]
     w = sum(1 for g in sub if g["result"] == "W")
@@ -487,6 +623,7 @@ def main():
             hitting     Season batting stats for all players
             pitching    Season pitching stats for all players
             summary     Season-at-a-glance with stat leaders
+            update      Pull new games + fresh stats from MLB API → saves to sample_data.json
 
           flags:
             --live      Fetch from MLB Stats API instead of sample data
@@ -499,6 +636,7 @@ def main():
             python giants_tracker.py hitting
             python giants_tracker.py pitching
             python giants_tracker.py summary
+            python giants_tracker.py update        ← run this daily to stay current
             python giants_tracker.py schedule --live
         """),
     )
@@ -511,6 +649,7 @@ def main():
     sub.add_parser("hitting")
     sub.add_parser("pitching")
     sub.add_parser("summary")
+    sub.add_parser("update")
 
     args = parser.parse_args()
     cmd = args.command or "schedule"
@@ -521,6 +660,7 @@ def main():
         "hitting":  cmd_hitting,
         "pitching": cmd_pitching,
         "summary":  cmd_summary,
+        "update":   cmd_update,
     }
 
     fn = dispatch.get(cmd)
