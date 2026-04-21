@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Summary — SF Giants 2026{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>2026 Season Summary</h1>
+  <p>Stat leaders &amp; season overview</p>
+</div>
+
+<!-- record cards -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="label">Overall</div>
+      <div class="value orange">{{ wins }}-{{ losses }}</div>
+      <div class="sub">{{ games_played }} GP</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="label">Win %</div>
+      <div class="value">{% if games_played %}.{{ "%03d"|format((wins/games_played*1000)|int) }}{% else %}—{% endif %}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="label">Home</div>
+      <div class="value">{{ home_w }}-{{ home_l }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="label">Away</div>
+      <div class="value">{{ away_w }}-{{ away_l }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- batting leaders -->
+  <div class="col-md-6">
+    <div class="section-header">Batting Leaders</div>
+    <table class="table giants-table">
+      <tbody>
+        <tr>
+          <td style="color:#888;width:140px">Home Runs</td>
+          <td class="player-name">{{ leaders.hr.name }}</td>
+          <td class="text-end"><strong style="color:var(--giants-orange)">{{ leaders.hr.hr }}</strong></td>
+        </tr>
+        <tr>
+          <td style="color:#888">RBI</td>
+          <td class="player-name">{{ leaders.rbi.name }}</td>
+          <td class="text-end"><strong style="color:var(--giants-orange)">{{ leaders.rbi.rbi }}</strong></td>
+        </tr>
+        <tr>
+          <td style="color:#888">Batting Avg</td>
+          <td class="player-name">{{ leaders.avg.name }}</td>
+          <td class="text-end"><strong style="color:var(--giants-orange)">{{ leaders.avg.avg }}</strong></td>
+        </tr>
+        <tr>
+          <td style="color:#888">OPS</td>
+          <td class="player-name">{{ leaders.ops.name }}</td>
+          <td class="text-end"><strong style="color:var(--giants-orange)">{{ leaders.ops.ops }}</strong></td>
+        </tr>
+        <tr>
+          <td style="color:#888">Stolen Bases</td>
+          <td class="player-name">{{ leaders.sb.name }}</td>
+          <td class="text-end"><strong style="color:var(--giants-orange)">{{ leaders.sb.sb }}</strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- pitching leaders -->
+  <div class="col-md-6">
+    <div class="section-header">Pitching Leaders</div>
+    <table class="table giants-table">
+      <tbody>
+        <tr>
+          <td style="color:#888;width:160px">ERA <small>(min 3 GS)</small></td>
+          <td class="player-name">{{ leaders.era.name }}</td>
+          <td class="text-end"><strong style="color:#4ade80">{{ leaders.era.era }}</strong></td>
+        </tr>
+        <tr>
+          <td style="color:#888">Wins</td>
+          <td class="player-name">{{ leaders.wins.name }}</td>
+          <td class="text-end"><strong style="color:var(--giants-orange)">{{ leaders.wins.w }}</strong></td>
+        </tr>
+        <tr>
+          <td style="color:#888">Strikeouts</td>
+          <td class="player-name">{{ leaders.k.name }}</td>
+          <td class="text-end"><strong style="color:var(--giants-orange)">{{ leaders.k.k }}</strong></td>
+        </tr>
+        <tr>
+          <td style="color:#888">Saves</td>
+          <td class="player-name">{{ leaders.sv.name }}</td>
+          <td class="text-end"><strong style="color:#3b82f6">{{ leaders.sv.sv }}</strong></td>
+        </tr>
+        <tr>
+          <td style="color:#888">WHIP <small>(min 3 GS)</small></td>
+          <td class="player-name">{{ leaders.whip.name }}</td>
+          <td class="text-end"><strong style="color:#4ade80">{{ leaders.whip.whip }}</strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

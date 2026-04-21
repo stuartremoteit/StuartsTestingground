@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% block title %}{{ box.date }} Boxscore — SF Giants 2026{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>{{ box.away_team }} <span style="color:#fff">vs</span> {{ box.home_team }}</h1>
+  <p>{{ box.date }} &mdash; {{ box.venue }}</p>
+</div>
+
+<!-- final score -->
+<div class="row g-3 mb-4">
+  <div class="col-6">
+    <div class="stat-card">
+      <div class="label">{{ box.away_team }}</div>
+      <div class="value {% if box.away_totals.r > box.home_totals.r %}orange{% endif %}">
+        {{ box.away_totals.r }}
+      </div>
+      <div class="sub">{{ box.away_totals.h }} H &nbsp;·&nbsp; {{ box.away_totals.e }} E</div>
+    </div>
+  </div>
+  <div class="col-6">
+    <div class="stat-card">
+      <div class="label">{{ box.home_team }}</div>
+      <div class="value {% if box.home_totals.r > box.away_totals.r %}orange{% endif %}">
+        {{ box.home_totals.r }}
+      </div>
+      <div class="sub">{{ box.home_totals.h }} H &nbsp;·&nbsp; {{ box.home_totals.e }} E</div>
+    </div>
+  </div>
+</div>
+
+<!-- linescore -->
+<div class="section-header">Linescore</div>
+<div class="table-responsive mb-4">
+  <table class="table linescore-table giants-table mb-0">
+    <thead>
+      <tr>
+        <th class="team-col">Team</th>
+        {% for i in box.linescore.innings %}<th>{{ i }}</th>{% endfor %}
+        <th class="total-col">R</th>
+        <th class="total-col">H</th>
+        <th class="total-col">E</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="team-col">{{ box.away_team }}</td>
+        {% for s in box.linescore.away %}<td>{{ s }}</td>{% endfor %}
+        <td class="total-col"><strong>{{ box.away_totals.r }}</strong></td>
+        <td class="total-col">{{ box.away_totals.h }}</td>
+        <td class="total-col">{{ box.away_totals.e }}</td>
+      </tr>
+      <tr>
+        <td class="team-col" style="color:#aaa">{{ box.home_team }}</td>
+        {% for s in box.linescore.home %}<td>{{ s }}</td>{% endfor %}
+        <td class="total-col"><strong>{{ box.home_totals.r }}</strong></td>
+        <td class="total-col">{{ box.home_totals.h }}</td>
+        <td class="total-col">{{ box.home_totals.e }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- batting -->
+{% for side, batters, totals in [
+    (box.away_team, box.away_batting, box.away_totals),
+    (box.home_team, box.home_batting, box.home_totals)
+] %}
+<div class="section-header mt-4">{{ side }} Batting</div>
+<div class="table-responsive mb-3">
+  <table class="table giants-table align-middle">
+    <thead>
+      <tr>
+        <th>#</th><th>Batter</th><th>Pos</th>
+        <th class="text-end">AB</th><th class="text-end">R</th><th class="text-end">H</th>
+        <th class="text-end">2B</th><th class="text-end">HR</th><th class="text-end">RBI</th>
+        <th class="text-end">BB</th><th class="text-end">K</th><th class="text-end">AVG</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in batters %}
+      <tr>
+        <td style="color:#555">{{ p.order }}</td>
+        <td class="player-name">{{ p.name }}</td>
+        <td style="color:#888">{{ p.pos }}</td>
+        <td class="text-end">{{ p.ab }}</td>
+        <td class="text-end">{{ p.r if p.r else '—' }}</td>
+        <td class="text-end"><strong>{{ p.h }}</strong></td>
+        <td class="text-end">{{ p['2b'] if p['2b'] else '—' }}</td>
+        <td class="text-end">
+          {% if p.hr %}<strong style="color:var(--giants-orange)">{{ p.hr }}</strong>
+          {% else %}—{% endif %}
+        </td>
+        <td class="text-end">{{ p.rbi if p.rbi else '—' }}</td>
+        <td class="text-end">{{ p.bb if p.bb else '—' }}</td>
+        <td class="text-end">{{ p.k if p.k else '—' }}</td>
+        <td class="text-end" style="color:#aaa">{{ p.avg }}</td>
+      </tr>
+      {% endfor %}
+      <tr style="border-top:2px solid #444;font-weight:700;color:#fff">
+        <td colspan="3">TOTALS</td>
+        <td class="text-end">{{ batters|sum(attribute='ab') }}</td>
+        <td class="text-end">{{ totals.r }}</td>
+        <td class="text-end">{{ totals.h }}</td>
+        <td class="text-end">{{ batters|sum(attribute='2b') }}</td>
+        <td class="text-end">{{ batters|sum(attribute='hr') }}</td>
+        <td class="text-end">{{ batters|sum(attribute='rbi') }}</td>
+        <td class="text-end">{{ totals.bb }}</td>
+        <td class="text-end">{{ totals.k }}</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+{% endfor %}
+
+<!-- pitching -->
+{% for side, pitchers in [(box.away_team, box.away_pitching), (box.home_team, box.home_pitching)] %}
+<div class="section-header mt-4">{{ side }} Pitching</div>
+<div class="table-responsive mb-3">
+  <table class="table giants-table align-middle">
+    <thead>
+      <tr>
+        <th>Pitcher</th><th>Dec</th>
+        <th class="text-end">IP</th><th class="text-end">H</th><th class="text-end">R</th>
+        <th class="text-end">ER</th><th class="text-end">BB</th><th class="text-end">K</th>
+        <th class="text-end">PC</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in pitchers %}
+      <tr>
+        <td class="player-name">{{ p.name }}</td>
+        <td>
+          {% if 'W' in p.result %}<span class="badge-w" style="font-size:.75rem">{{ p.result }}</span>
+          {% elif 'L' in p.result %}<span class="badge-l" style="font-size:.75rem">{{ p.result }}</span>
+          {% elif 'SV' in p.result %}<span class="badge" style="background:#3b82f6;color:#fff;font-size:.75rem;padding:3px 9px;border-radius:4px">{{ p.result }}</span>
+          {% else %}&nbsp;{% endif %}
+        </td>
+        <td class="text-end">{{ p.ip }}</td>
+        <td class="text-end">{{ p.h }}</td>
+        <td class="text-end">{{ p.r }}</td>
+        <td class="text-end">{{ p.er }}</td>
+        <td class="text-end">{{ p.bb }}</td>
+        <td class="text-end"><strong>{{ p.k }}</strong></td>
+        <td class="text-end" style="color:#aaa">{{ p.pc }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endfor %}
+
+<!-- key plays -->
+{% if box.game_notes %}
+<div class="section-header mt-4">Key Plays</div>
+{% for note in box.game_notes %}
+<div class="game-note">{{ note }}</div>
+{% endfor %}
+{% endif %}
+
+<div class="mt-4">
+  <a href="/" class="btn btn-outline-secondary btn-sm">&larr; Back to Schedule</a>
+</div>
+{% endblock %}

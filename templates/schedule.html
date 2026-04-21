@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Schedule — SF Giants 2026{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>2026 Season Schedule</h1>
+  <p>Opening Day: March 27, 2026</p>
+</div>
+
+<!-- record strip -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="label">Record</div>
+      <div class="value orange">{{ wins }}-{{ losses }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="label">Win %</div>
+      <div class="value">{% if games_played %}.{{ "%03d"|format((wins/games_played*1000)|int) }}{% else %}—{% endif %}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="label">Games</div>
+      <div class="value">{{ games_played }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="label">Streak</div>
+      <div class="value orange">
+        {% set ns = namespace(streak=0, last='') %}
+        {% for g in games|reverse %}
+          {% if g.result in ('W','L') %}
+            {% if ns.last == '' %}{% set ns.last = g.result %}{% set ns.streak = 1 %}
+            {% elif g.result == ns.last %}{% set ns.streak = ns.streak + 1 %}
+            {% else %}{% set ns.last = '' %}{% endif %}
+          {% endif %}
+        {% endfor %}
+        {{ ns.streak }}{{ ns.last if ns.last else '—' }}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- schedule table -->
+<div class="table-responsive">
+  <table class="table giants-table align-middle">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th></th>
+        <th>Opponent</th>
+        <th class="text-center">W/L</th>
+        <th class="text-center">Score</th>
+        <th class="text-center">Rec</th>
+        <th>Decision</th>
+        <th class="text-center">Box</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for g in games %}
+      <tr>
+        <td style="white-space:nowrap">{{ g.date }}</td>
+        <td style="color:#888;font-size:.8rem">{{ 'vs' if g.home_away == 'HOME' else '@' }}</td>
+        <td class="player-name">
+          {{ g.opponent }}
+          {% if g.note %}<span class="ms-2 badge" style="background:#333;color:#FD5A1E;font-size:.7rem">{{ g.note }}</span>{% endif %}
+        </td>
+        <td class="text-center">
+          {% if g.result == 'W' %}<span class="badge-w">W</span>
+          {% elif g.result == 'L' %}<span class="badge-l">L</span>
+          {% elif g.result == 'LIVE' %}<span class="badge-live">LIVE</span>
+          {% else %}<span style="color:#555">—</span>{% endif %}
+        </td>
+        <td class="text-center" style="font-variant-numeric:tabular-nums">
+          {% if g.result in ('W','L') %}{{ g.giants_score }}–{{ g.opp_score }}{% endif %}
+        </td>
+        <td class="text-center" style="color:#aaa">{{ g.record }}</td>
+        <td style="font-size:.82rem;color:#aaa">
+          {% if g.winning_pitcher %}
+            <span style="color:#4ade80">W:</span> {{ g.winning_pitcher }}
+            &nbsp;<span style="color:#f87171">L:</span> {{ g.losing_pitcher }}
+            {% if g.save %}&nbsp;<span style="color:#60a5fa">SV:</span> {{ g.save }}{% endif %}
+          {% endif %}
+        </td>
+        <td class="text-center">
+          {% if g.game_pk in [746043] %}
+          <a href="/game/{{ g.game_pk }}" class="btn btn-sm" style="background:#FD5A1E;color:#000;font-weight:600;font-size:.75rem;padding:2px 10px">Box</a>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
